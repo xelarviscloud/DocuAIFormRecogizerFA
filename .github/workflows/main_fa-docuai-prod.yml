@@ -64,5 +64,5 @@ jobs:
         with:
           app-name: 'fa-docuai-prod'
           slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          package: ./backend.zip
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_65E8A24C09C84A9FB19151ED4B6848BF }}
