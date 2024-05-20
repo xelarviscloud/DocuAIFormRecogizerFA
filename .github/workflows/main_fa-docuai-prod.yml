@@ -34,11 +34,16 @@ jobs:
           npm run test --if-present
           #popd
 
+      - name: "Create ZIP"
+        run: |
+          Get-ChildItem $pwd | Compress-Archive -Destination .\backend.zip
+        shell: pwsh
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: node-app
-          path: ./build
+          path: .
 
   deploy:
     runs-on: windows-latest
