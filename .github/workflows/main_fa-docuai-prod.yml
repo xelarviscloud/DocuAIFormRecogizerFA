@@ -34,16 +34,16 @@ jobs:
           npm run test --if-present
           #popd
 
-      - name: "Create ZIP"
-        run: |
-          Get-ChildItem $pwd | Compress-Archive -Destination .\backend.zip
-        shell: pwsh
+      #- name: "Create ZIP"
+      #  run: |
+      #    Get-ChildItem $pwd | Compress-Archive -Destination .\backend.zip
+      #  shell: pwsh
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: node-app
-          path: .\backend.zip
+          path: .\build
 
   deploy:
     runs-on: windows-latest
@@ -64,5 +64,5 @@ jobs:
         with:
           app-name: 'fa-docuai-prod'
           slot-name: 'Production'
-          package: ./backend.zip
+          package: ./build
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_65E8A24C09C84A9FB19151ED4B6848BF }}
