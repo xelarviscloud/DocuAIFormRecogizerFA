@@ -14,22 +14,30 @@ const { ObjectId } = require("mongodb");
 // );
 
 app.storageQueue("ProcessDocumentToPages-FA", {
-  queueName: "document-upload-dev-que",
+  queueName: "%AZURE_DOCUMENT_UPLOAD_QUEUE%",
   connection: "AZURE_DOCUMENTS_STORAGE",
-  mongoDBClientConnection: "MongoDBConnectionString",
   handler: async (queueItem, context) => {
-    context.log("Storage queue function processed work item:", queueItem);
-    const mongoClient = new MongoClient(mongoDBClientConnection);
-    const database = await mongoClient.db("DocuAIDB");
-    const pageCollection = await database.collection("pages");
-    const documentCollection = await database.collection("documents");
-
     try {
       const _blobName = queueItem.metadata.blob;
       const connString = process.env.AZURE_DOCUMENTS_STORAGE;
       const containerName = process.env.AZURE_STORAGE_CONTAINER;
       const frConnString = process.env.FRM_RECOGNIZER_CONNECTION;
       const frAccessKey = process.env.FRM_RECOGNIZER_ACCESSKEY;
+      const mongoDBClientConnection = process.env.MONGO_DB_CONNECTION_STRING;
+      const mongoDatabaseName = process.env.MONGO_DATABASE_NAME;
+
+      context.log(
+        "Storage queue function processed work item:",
+
+        mongoDBClientConnection,
+        mongoDatabaseName,
+        queueItem
+      );
+
+      const mongoClient = new MongoClient(mongoDBClientConnection);
+      const database = await mongoClient.db(mongoDatabaseName);
+      const pageCollection = await database.collection("pages");
+      const documentCollection = await database.collection("documents");
 
       context.log("blobPath", _blobName, connString, containerName);
 
