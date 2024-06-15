@@ -106,6 +106,7 @@ app.storageQueue("ProcessDocumentToPages-FA", {
           documentName: queueItem.metadata.blob,
           sortId: i,
           locationId: queueItem.locationId,
+          organizationId: queueItem.organizationId,
           userId: queueItem.userId,
           userName: queueItem.userName,
           tags: extractTags(result?.keyValuePairs, context),
