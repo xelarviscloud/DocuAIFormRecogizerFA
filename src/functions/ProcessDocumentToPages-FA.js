@@ -79,6 +79,7 @@ app.storageQueue("ProcessDocumentToPages-FA", {
         let subDocument = await PDFDocument.create();
         // copy the page at current index
         let [copiedPage] = await subDocument.copyPages(pdfDoc, [i]);
+        let page_Rotation = copiedPage?.getRotation().angle;
         subDocument.addPage(copiedPage);
         let pdfBytes = await subDocument.save();
         let blockBlobClient = containerClient.getBlockBlobClient(
@@ -111,6 +112,7 @@ app.storageQueue("ProcessDocumentToPages-FA", {
           userName: queueItem.userName,
           tags: extractTags(result?.keyValuePairs, context),
           createdAt: new Date(),
+          pageRotation: page_Rotation,
         });
         await documentCollection.updateOne(
           { _id: new ObjectId(queueItem.documentId) },
