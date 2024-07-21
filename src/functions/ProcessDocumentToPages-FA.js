@@ -1,6 +1,7 @@
 const { app } = require("@azure/functions");
 var moment = require("moment");
 const PDFDocument = require("pdf-lib").PDFDocument;
+const { degrees } = require("pdf-lib");
 const { BlobServiceClient } = require("@azure/storage-blob");
 const {
   AzureKeyCredential,
@@ -8,6 +9,7 @@ const {
 } = require("@azure/ai-form-recognizer");
 const { MongoClient } = require("mongodb");
 const { ObjectId } = require("mongodb");
+const axios = require("axios");
 
 // const mongoClient = new MongoClient(
 //   "mongodb+srv://hitesh:hitesh@cluster0.gkpowom.mongodb.net/StaySolveDocuAiDB?retryWrites=true&w=majority&appName=Cluster0"
@@ -25,13 +27,15 @@ app.storageQueue("ProcessDocumentToPages-FA", {
       const frAccessKey = process.env.FRM_RECOGNIZER_ACCESSKEY;
       const mongoDBClientConnection = process.env.MONGO_DB_CONNECTION_STRING;
       const mongoDatabaseName = process.env.MONGO_DATABASE_NAME;
+      const connAzFnGetTextRotation = process.env.AZ_FN_GET_TEXT_ROTATION;
 
       context.log(
         "Storage queue function processed work item:",
 
         mongoDBClientConnection,
         mongoDatabaseName,
-        queueItem
+        queueItem,
+        connAzFnGetTextRotation
       );
 
       const mongoClient = new MongoClient(mongoDBClientConnection);
@@ -82,6 +86,30 @@ app.storageQueue("ProcessDocumentToPages-FA", {
         let page_Rotation = copiedPage?.getRotation().angle;
         subDocument.addPage(copiedPage);
         let pdfBytes = await subDocument.save();
+        // Need to check rotation angle
+
+        let config = {
+          method: "post",
+          maxBodyLength: Infinity,
+          //url: "http://0.0.0.0:7071/api/http_trigger",
+          url: `${connAzFnGetTextRotation}`, //"https://test-queue-v1.azurewebsites.net/api/http_trigger",
+          // headers: {
+          //   ...data.getHeaders(),
+          // },
+          data: pdfBytes,
+        };
+
+        rotation = await axios.request(config);
+
+        console.log("Orientation Response:", rotation?.data);
+
+        if (rotation && rotation?.data && rotation.data > 0) {
+          rPage = subDocument.getPage(0);
+          rPage.setRotation(degrees(rotation.data));
+          subDocument.removePage(0);
+          subDocument.addPage(rPage);
+          pdfBytes = await subDocument.save();
+        }
         let blockBlobClient = containerClient.getBlockBlobClient(
           `${_folder}/Page_${pageIndex}.pdf`
         );
