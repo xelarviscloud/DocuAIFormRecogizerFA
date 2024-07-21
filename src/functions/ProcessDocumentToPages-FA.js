@@ -92,7 +92,7 @@ app.storageQueue("ProcessDocumentToPages-FA", {
           method: "post",
           maxBodyLength: Infinity,
           //url: "http://0.0.0.0:7071/api/http_trigger",
-          url: "https://test-queue-v1.azurewebsites.net/api/http_trigger",
+          url: `${connAzFnGetTextRotation}`, //"https://test-queue-v1.azurewebsites.net/api/http_trigger",
           // headers: {
           //   ...data.getHeaders(),
           // },
